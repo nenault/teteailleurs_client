@@ -1,10 +1,16 @@
 import React from "react";
+import Sentences from "./Sentences";
+import WordList from "./WordList";
 
 class Home extends React.Component {
+
   render() {
     return (
       <div>
-        <h1>Home Page ∆</h1>
+        {/* <WordList /> */}
+        <Sentences />
+
+        
       </div>
     );
   }
