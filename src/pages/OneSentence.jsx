@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import apiHandler from "../api/apiHandler.js";
 import CreateWord from "./CreateWord";
+import { Link } from "react-router-dom";
 
 class OneSentence extends Component {
   state = {
@@ -8,6 +9,7 @@ class OneSentence extends Component {
     isDone: "",
     addWord: "",
     words: [],
+    allWords: [],
   };
 
   componentDidMount() {
@@ -16,6 +18,7 @@ class OneSentence extends Component {
       .then((apiRes) => {
         this.setState({ sentence: apiRes.data, isDone: apiRes.data.isDone });
         this.buildWords(apiRes.data.words);
+        this.getWordsDB();
       })
       .catch((error) => {
         console.log(error);
@@ -75,14 +78,68 @@ class OneSentence extends Component {
     });
   };
 
+  fetchWords = (sentence) => {
+    const wordsSentence = sentence.split(" ");
+    // console.log(words);
+    for (let [index, wordSentence] of wordsSentence.entries()) {
+      // console.log(item);
+      // const found = this.state.allWords.some((word) => word.arabic === item);
+      // console.log(item.arabic);
+      // console.log(sentence.includes(item.arabic));
+      // if (item.arabic === )
+      let wordPosition = wordsSentence.indexOf(wordSentence);
+      // console.log(wordsSentence);
+      for (const [index, wordDB] of this.state.allWords.entries()) {
+        if (wordDB.arabic.includes(wordSentence)) {
+          //  console.log(wordPosition);
+          // wordsSentence.splice(
+          //   wordPosition,
+          //   0,
+          //   "Nico"
+          // );
+          wordsSentence[wordPosition] = `${wordSentence}$`;
+        }
+      }
+    }
+    // console.log(wordsSentence);
+
+    return wordsSentence;
+  };
+
+  cleanWords = (word) => {
+  //  console.log("PLOP");
+    return word.split("$")[0];
+  };
+
+  getWordsDB = () => {
+    apiHandler
+      .getAll("/api/words")
+      .then((apiRes) => {
+        this.setState({ allWords: apiRes.data });
+      })
+      .catch((apiErr) => {
+        console.log(apiErr);
+      });
+  };
+
   render() {
     if (!this.state.sentence) {
       return <div>Loading</div>;
     }
-
+    // console.log(this.state.allWords);
     return (
       <div className="container">
-        <h1 className="arabic">{this.state.sentence.arabic}</h1>
+        <h1 className="arabic">
+          {this.fetchWords(this.state.sentence.arabic).map((word) =>
+            word.includes("$") ? (
+              <span key={word} style={{ backgroundColor: "#FA7A55" }}>
+                {this.cleanWords(word)}&nbsp;
+              </span>
+            ) : (
+              <span key={word}>{word}&nbsp;</span>
+            )
+          )}
+        </h1>
         <br />
         <span>Google : {this.state.sentence.google}</span>
         <span>Roman : {this.state.sentence.latin}</span>
@@ -108,13 +165,32 @@ class OneSentence extends Component {
           <div>{this.state.addWord}</div>
 
           <div>
-            {this.state.words &&
-              this.state.words.map((word) => (
-                <div key={word._id}>
-                  <p>{word.arabic}</p>
-                  <p>{word.french}</p>
-                </div>
-              ))}
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Arabic</th>
+                  <th scope="col">Google</th>
+                  <th scope="col">French</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.words &&
+                  this.state.words.map((word) => (
+                    <tr key={word._id}>
+                      <td data-label="Google">
+                        <Link to={`/words/${word._id}/`}>{word.arabic}</Link>
+                      </td>
+                      <td data-label="Google">
+                        <Link to={`/words/${word._id}/`}>{word.google}</Link>
+                      </td>
+
+                      <td data-label="Google">
+                        <Link to={`/words/${word._id}/`}>{word.french}</Link>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
